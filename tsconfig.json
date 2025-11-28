@@ -4,5 +4,5 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-  ]
+, "src/services/jamendo.ts"  ]
 }

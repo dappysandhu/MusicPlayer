@@ -1,265 +1,310 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   ScrollView,
+  Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { fetchTracks } from "../../services/jamendo";
+
+// Jamendo Song Type
+type Song = {
+  id: string;
+  title: string;
+  artist: string;
+  cover: string;
+  audioUrl: string;
+};
 
 const HomeScreen = () => {
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigation = useNavigation<any>();
+
+  useEffect(() => {
+    const loadSongs = async () => {
+      setLoading(true);
+      const tracks = await fetchTracks(60);
+      setSongs(tracks);
+      setLoading(false);
+    };
+
+    loadSongs();
+  }, []);
+
+  const continueListening = songs.slice(0, 10);
+  const topMixes = songs.slice(10, 18);
+  const basedOnListening = songs.slice(18, 30);
+
+const getCover = (song: Song) => song.cover;
+const formatSubtitle = (song: Song) => song.artist;
+
+if (!loading && songs.length === 0) {
   return (
     <View style={styles.container}>
-      {/* header */}
-      <LinearGradient
+       <LinearGradient
         colors={["#00333D", "#06323E", "#000000"]}
-        style={styles.headerContainer}
+        style={styles.header}
       >
+        <View style={styles.headerRow}>
+          <View style={styles.logoRow}>
+            <Image
+              source={require("../../../assets/images/musium-logo.png")}
+              style={{ width: 34, height: 34, marginRight: 6 }}
+              resizeMode="contain"
+            />
+            <Text style={styles.appTitle}>Musium</Text>
+          </View>
+          </View>
+       </LinearGradient>
+      <Text style={{ color: "#fff", marginTop: 400, textAlign: "center", alignSelf: "center" }}>
+        No music found
+      </Text>
+      
+    </View>
+  );
+}
 
-        <View style={styles.userRow}>
-          <Image
-            source={{
-              uri: "https://i.pravatar.cc/300",
-            }}
-            style={styles.avatar}
-          />
-
-          <View>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
-            <Text style={styles.username}>Dappysandhu</Text>
+return (
+  <View style={styles.container}>
+    <LinearGradient
+        colors={["#00333D", "#06323E", "#000000"]}
+        style={styles.header}
+      >
+        <View style={styles.headerRow}>
+          <View style={styles.logoRow}>
+            <Image
+              source={require("../../../assets/images/musium-logo.png")}
+              style={{ width: 34, height: 34, marginRight: 6 }}
+              resizeMode="contain"
+            />
+            <Text style={styles.appTitle}>Musium</Text>
           </View>
 
-          <View style={styles.iconsRight}>
-            <Ionicons name="stats-chart" size={22} color="#fff" />
+          <View style={styles.headerIcons}>
             <Ionicons name="notifications-outline" size={22} color="#fff" />
-            <Ionicons name="settings-outline" size={22} color="#fff" />
+            <Ionicons
+              name="settings-outline"
+              size={22}
+              color="#fff"
+              style={{ marginLeft: 16 }}
+            />
           </View>
         </View>
+
+        <Text style={styles.greetingText}>Good evening</Text>
       </LinearGradient>
 
-      {/* main content */}
-      <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: -20 }}>
-        <Text style={styles.sectionTitle}>Continue Listening</Text>
-
-        <View style={styles.gridWrapper}>
-          {continueListening.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.card}>
-              <Image source={{ uri: item.img }} style={styles.cardImage} />
-              <Text style={styles.cardText}>{item.title}</Text>
-            </TouchableOpacity>
-          ))}
+      {loading && songs.length === 0 ? (
+        <View style={styles.loaderWrapper}>
+          <ActivityIndicator size="small" color="#39d1d8" />
         </View>
+      ) : (
+        <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+          
+          {/* CONTINUE LISTENING */}
+          {continueListening.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Continue listening</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {continueListening.map((song) => (
+                  <TouchableOpacity
+                    key={song.id}
+                    style={styles.smallCard}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      navigation.navigate("Playlist", {
+                        playlist: {
+                          id: "continue_listening",
+                          name: "Continue Listening",
+                          description: "Songs you recently played",
+                          cover: getCover(song),
+                          songs: continueListening,
+                        },
+                      })
+                    }
+                  >
+                    <Image source={{ uri: getCover(song) }} style={styles.smallCardImg} />
+                    <Text style={styles.smallCardTitle} numberOfLines={1}>
+                      {song.title}
+                    </Text>
+                    <Text style={styles.smallCardSubtitle} numberOfLines={1}>
+                      {formatSubtitle(song)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
-        {/* top mixes */}
-        <Text style={styles.sectionTitle}>Your Top Mixes</Text>
+          {/* TOP MIXES */}
+          {topMixes.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Your Top Mixes</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {topMixes.map((song) => (
+                  <TouchableOpacity
+                    key={song.id}
+                    style={styles.mixCard}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      navigation.navigate("Playlist", {
+                        playlist: {
+                          id: "top_mixes",
+                          name: "Your Top Mixes",
+                          description: "Your favorite mixes and tracks",
+                          cover: getCover(song),
+                          songs: topMixes,
+                        },
+                      })
+                    }
+                  >
+                    <Image source={{ uri: getCover(song) }} style={styles.mixImg} />
+                    <Text style={styles.mixTitle} numberOfLines={1}>
+                      {song.title}
+                    </Text>
+                    <Text style={styles.mixSubtitle} numberOfLines={1}>
+                      {formatSubtitle(song)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {topMixes.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.mixCard}>
-              <Image source={{ uri: item.img }} style={styles.mixImage} />
-              <Text style={styles.mixTitle}>{item.title}</Text>
-            </TouchableOpacity>
-          ))}
+          {/* FEATURED PAIR */}
+          {songs.length >= 2 && (
+            <View style={[styles.section, { marginTop: 10 }]}>
+              <View style={styles.featuredRow}>
+                <TouchableOpacity
+                  style={styles.featuredCard}
+                  activeOpacity={0.85}
+                  onPress={() =>
+                    navigation.navigate("Playlist", {
+                      playlist: {
+                        id: "featured_left",
+                        name: songs[0].title,
+                        description: "Featured Track",
+                        cover: getCover(songs[0]),
+                        songs: [songs[0], songs[1]],
+                      },
+                    })
+                  }
+                >
+                  <Image source={{ uri: getCover(songs[0]) }} style={styles.featuredImg} />
+                  <View style={styles.featuredTextWrapper}>
+                    <Text style={styles.featuredTitle} numberOfLines={1}>
+                      {songs[0].title}
+                    </Text>
+                    <Text style={styles.featuredSubtitle} numberOfLines={1}>
+                      {formatSubtitle(songs[0])}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.featuredCard}
+                  activeOpacity={0.85}
+                  onPress={() =>
+                    navigation.navigate("Playlist", {
+                      playlist: {
+                        id: "featured_right",
+                        name: songs[1].title,
+                        description: "Featured Track",
+                        cover: getCover(songs[1]),
+                        songs: [songs[0], songs[1]],
+                      },
+                    })
+                  }
+                >
+                  <Image source={{ uri: getCover(songs[1]) }} style={styles.featuredImg} />
+                  <View style={styles.featuredTextWrapper}>
+                    <Text style={styles.featuredTitle} numberOfLines={1}>
+                      {songs[1].title}
+                    </Text>
+                    <Text style={styles.featuredSubtitle} numberOfLines={1}>
+                      {formatSubtitle(songs[1])}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* BASED ON LISTENING */}
+          {basedOnListening.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Based on your listening</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {basedOnListening.map((song) => (
+                  <TouchableOpacity
+                    key={song.id}
+                    style={styles.smallCard}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      navigation.navigate("Playlist", {
+                        playlist: {
+                          id: "based_on_listening",
+                          name: "Based on Your Listening",
+                          description: "Recommended picks",
+                          cover: getCover(song),
+                          songs: basedOnListening,
+                        },
+                      })
+                    }
+                  >
+                    <Image source={{ uri: getCover(song) }} style={styles.smallCardImg} />
+                    <Text style={styles.smallCardTitle} numberOfLines={1}>
+                      {song.title}
+                    </Text>
+                    <Text style={styles.smallCardSubtitle} numberOfLines={1}>
+                      {formatSubtitle(song)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          <View style={{ height: 80 }} />
         </ScrollView>
-
-        {/* recent listening */}
-        <Text style={styles.sectionTitle}>Based on your recent listening</Text>
-
-        <View style={styles.gridWrapper}>
-          {recentListening.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.bigCard}>
-              <Image source={{ uri: item.img }} style={styles.bigCardImage} />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={{ height: 40 }} />
-      </ScrollView>
+      )}
     </View>
   );
 };
 
 export default HomeScreen;
 
-// data
-const continueListening = [
-  {
-    img: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg",
-    title: "Coffee & Jazz",
-  },
-  {
-    img: "https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg",
-    title: "RELEASED",
-  },
-  {
-    img: "https://images.pexels.com/photos/374870/pexels-photo-374870.jpeg",
-    title: "Anything Goes",
-  },
-  {
-    img: "https://images.pexels.com/photos/154147/pexels-photo-154147.jpeg",
-    title: "Anime OSTs",
-  },
-  {
-    img: "https://images.pexels.com/photos/3937179/pexels-photo-3937179.jpeg",
-    title: "Harry's House",
-  },
-  {
-    img: "https://images.pexels.com/photos/4476376/pexels-photo-4476376.jpeg",
-    title: "Lo-Fi Beats",
-  },
-];
-
-const topMixes = [
-  {
-    img: "https://images.pexels.com/photos/698907/pexels-photo-698907.jpeg",
-    title: "Pop Mix",
-  },
-  {
-    img: "https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg",
-    title: "Chill Mix",
-  },
-];
-
-const recentListening = [
-  {
-    img: "https://images.pexels.com/photos/532558/pexels-photo-532558.jpeg",
-  },
-  {
-    img: "https://images.pexels.com/photos/243988/pexels-photo-243988.jpeg",
-  },
-];
-
-
-// styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0D0D0D",
-  },
-
-  headerContainer: {
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    width: "100%",
-  },
-
-  statusRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-
-  time: {
-    color: "#fff",
-    fontSize: 18,
-  },
-
-  headerIconsRight: {
-    flexDirection: "row",
-    width: 70,
-    justifyContent: "space-between",
-  },
-
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  avatar: {
-    width: 55,
-    height: 55,
-    borderRadius: 50,
-    marginRight: 15,
-  },
-
-  welcomeText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-
-  username: {
-    color: "#cfcfcf",
-    fontSize: 13,
-    marginTop: 3,
-  },
-
-  iconsRight: {
-    flexDirection: "row",
-    marginLeft: "auto",
-    width: 100,
-    justifyContent: "space-between",
-  },
-
-  sectionTitle: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "700",
-    marginLeft: 20,
-    marginTop: 30,
-  },
-
-  gridWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginTop: 15,
-  },
-
-  card: {
-    width: "48%",
-    backgroundColor: "#1A1A1A",
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 15,
-  },
-
-  cardImage: {
-    width: "100%",
-    height: 70,
-    borderRadius: 10,
-  },
-
-  cardText: {
-    color: "#fff",
-    marginTop: 10,
-  },
-
-  mixCard: {
-    width: 180,
-    marginLeft: 20,
-    marginRight: 5,
-    marginTop: 15,
-  },
-
-  mixImage: {
-    width: "100%",
-    height: 160,
-    borderRadius: 15,
-  },
-
-  mixTitle: {
-    color: "#fff",
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  bigCard: {
-    width: "48%",
-    marginBottom: 15,
-    backgroundColor: "#1A1A1A",
-    borderRadius: 15,
-  },
-
-  bigCardImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 15,
-  },
+  container: { flex: 1, backgroundColor: "#0D0D0D" },
+  header: { paddingTop: 50, paddingHorizontal: 20, paddingBottom: 20 },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  logoRow: { flexDirection: "row", alignItems: "center" },
+  appTitle: { color: "#39d1d8", fontSize: 22, fontWeight: "700" },
+  headerIcons: { flexDirection: "row", alignItems: "center" },
+  greetingText: { color: "#fff", fontSize: 26, fontWeight: "700", marginTop: 16 },
+  body: { flex: 1 },
+  loaderWrapper: { flex: 1, justifyContent: "center", alignItems: "center" },
+  section: { marginTop: 18 },
+  sectionTitle: { color: "#fff", fontSize: 20, fontWeight: "700", marginLeft: 20, marginBottom: 10 },
+  smallCard: { width: 130, marginLeft: 20 },
+  smallCardImg: { width: 130, height: 130, borderRadius: 10, marginBottom: 8 },
+  smallCardTitle: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  smallCardSubtitle: { color: "#aaa", fontSize: 12, marginTop: 2 },
+  mixCard: { width: 150, marginLeft: 20 },
+  mixImg: { width: 150, height: 150, borderRadius: 12, marginBottom: 8 },
+  mixTitle: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  mixSubtitle: { color: "#aaa", fontSize: 12, marginTop: 2 },
+  featuredRow: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20 },
+  featuredCard: { flex: 1, marginRight: 10, borderRadius: 12, backgroundColor: "#181818", overflow: "hidden" },
+  featuredImg: { width: "100%", height: 120 },
+  featuredTextWrapper: { padding: 10 },
+  featuredTitle: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  featuredSubtitle: { color: "#aaa", fontSize: 12, marginTop: 2 },
 });

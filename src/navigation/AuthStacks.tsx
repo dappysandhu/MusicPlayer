@@ -8,6 +8,8 @@ import SignInScreen from "../screens/auth/SignInScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import SignupScreen from "../screens/auth/SignupScreen";
 import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
+import PlayerScreen from "../screens/player/PlayerScreen";
+import PlaylistScreen from "../screens/player/PlaylistScreen";
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -22,11 +24,14 @@ export default function AuthStacks() {
       }}
     >
       <Stack.Screen name="Launch" component={LaunchScreen} />
+      <Stack.Screen name="Playlist" component={PlaylistScreen} />
+      <Stack.Screen name="Player" component={PlayerScreen} /> 
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      
     </Stack.Navigator>
   );
 }

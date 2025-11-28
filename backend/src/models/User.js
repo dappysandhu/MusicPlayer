@@ -6,9 +6,7 @@ const ListeningEntrySchema = new Schema(
     song: { type: Schema.Types.ObjectId, ref: "Song", required: true },
     playedAt: { type: Date, default: Date.now },
     device: String,           // "mobile", "web"
-    context: {
-      type: String,           // "playlist:xyz", "album:abc"
-    },
+    context: String,          // "playlist:xyz", "album:abc"
   },
   { _id: false }
 );
@@ -46,8 +44,5 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-// Indexes to optimize queries
-UserSchema.index({ firebaseUid: 1 });
-UserSchema.index({ email: 1 });
 
 export default model("User", UserSchema);

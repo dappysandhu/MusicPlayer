@@ -1,44 +1,30 @@
-import mongoose, { model } from "mongoose";
-const { Schema } = mongoose;
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
 const SongSchema = new Schema(
   {
-    title: { type: String, required: true, index: true },
+    title: { type: String, required: true },
 
-    // Relations
-    artists: [{ type: Schema.Types.ObjectId, ref: "Artist", index: true }],
+    artists: [{ type: Schema.Types.ObjectId, ref: "Artist" }],
     album: { type: Schema.Types.ObjectId, ref: "Album" },
 
-    // External IDs
-    spotifyId: { type: String, index: true, unique: true, sparse: true },
+    spotifyId: { type: String, index: true, sparse: true },
     jamendoTrackId: { type: String, index: true, sparse: true },
 
-    // Audio & media
-    audioUrl: { type: String },      // mp3 from Jamendo
-    previewUrl: { type: String },
-    coverUrl: { type: String },      // use album cover if missing
+    coverUrl: String,
+    audioUrl: String,
+    previewUrl: String,
 
     durationMs: Number,
     explicit: { type: Boolean, default: false },
 
-    genres: [String],                 // computed from artists/album
+    genres: [String],
 
-    audioUrl: String,
-    isPlayable: { type: Boolean, default: false },
-
-    spotifyId: String,
-    jamendoId: String,
-
-
-    // Analytics / recs
-    popularity: { type: Number, default: 0 },   // from Spotify
-    playCount: { type: Number, default: 0 },
-    skipCount: { type: Number, default: 0 },
-    likeCount: { type: Number, default: 0 },
+    popularity: Number,
+    playCount: Number,
 
     releaseYear: Number,
 
-    // audio features (from Spotify)
     audioFeatures: {
       danceability: Number,
       energy: Number,
@@ -50,8 +36,5 @@ const SongSchema = new Schema(
   },
   { timestamps: true }
 );
-
-// Simple text index for search
-SongSchema.index({ title: "text" });
 
 export default model("Song", SongSchema);

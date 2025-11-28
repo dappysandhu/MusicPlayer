@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
@@ -9,6 +12,8 @@ import artistRoutes from "./routes/artistRoutes.js";
 import albumRoutes from "./routes/albumRoutes.js";
 import playlistRoutes from "./routes/playlistRoutes.js";
 import historyRoutes from "./routes/historyRoutes.js";
+import genreRoutes from "./routes/genreRoutes.js";
+
 
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -37,6 +42,8 @@ app.use("/api/artists", artistRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/playlists", playlistRoutes);
 app.use("/api/history", historyRoutes);
+app.use("/api/genres", genreRoutes);
+
 
 // Health check
 app.get("/", (req, res) => {

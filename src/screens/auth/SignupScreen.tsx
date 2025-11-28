@@ -5,7 +5,6 @@ import React, { useState } from "react";
 import {
   Dimensions,
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,6 +12,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { Colors } from "../../constants/theme";
 import { AuthStackParamList } from "../../navigation/AuthStackTypes";

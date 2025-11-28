@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
   Image,
   Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthStackParamList } from "../../navigation/AuthStackTypes";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { Colors } from "../../constants/theme";

@@ -1,17 +1,22 @@
-import { NavigationContainer, DefaultTheme, Theme } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
+import { NavigationContainer, DefaultTheme, Theme } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import { Colors } from "./src/constants/theme";
 import AuthStacks from "./src/navigation/AuthStacks";
 import BottomTabs from "./src/navigation/BottomTabs";
+import PlayerBottomSheet from "./src/components/player/PlayerBottomSheet";
+
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./src/services/firebase";
+import { MusicPlayerProvider } from "./src/context/MusicPlayerContext";
 
 export default function App() {
   const scheme = useColorScheme() || "dark";
   const C = Colors[scheme];
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const navTheme: Theme = {
@@ -28,7 +33,6 @@ export default function App() {
     },
   };
 
-  // Listen for login / logout changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
@@ -37,11 +41,22 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  if (loading) return null; // splash screen placeholder
+  if (loading) return null;
 
   return (
-    <NavigationContainer theme={navTheme}>
-      {user ? <BottomTabs /> : <AuthStacks />}
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <MusicPlayerProvider>
+        <NavigationContainer theme={navTheme}>
+          {user ? (
+            <>
+              <BottomTabs />
+              <PlayerBottomSheet />
+            </>
+          ) : (
+            <AuthStacks />
+          )}
+        </NavigationContainer>
+      </MusicPlayerProvider>
+    </GestureHandlerRootView>
   );
 }

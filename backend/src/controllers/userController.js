@@ -7,7 +7,10 @@ import History from "../models/History.js";
 export const getCurrentUser = async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.userId })
-      .populate("likedSongs")
+      .populate({
+        path: "likedSongs",
+        populate: [{ path: "artists" }, { path: "album" }],
+      })
       .populate("likedPlaylists")
       .populate("likedAlbums")
       .populate("followedArtists");
@@ -24,16 +27,11 @@ export const getCurrentUser = async (req, res) => {
 // PATCH /api/users/me
 export const updateProfile = async (req, res) => {
   try {
-    const { name, avatarUrl, preferredLanguages, preferredGenres } = req.body;
+    const updates = req.body;
 
     const user = await User.findOneAndUpdate(
       { firebaseUid: req.userId },
-      {
-        ...(name && { name }),
-        ...(avatarUrl && { avatarUrl }),
-        ...(preferredLanguages && { preferredLanguages }),
-        ...(preferredGenres && { preferredGenres }),
-      },
+      updates,
       { new: true }
     );
 
@@ -51,12 +49,10 @@ export const getLikedSongs = async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.userId }).populate({
       path: "likedSongs",
-      populate: [{ path: "artist" }, { path: "album" }],
+      populate: [{ path: "artists" }, { path: "album" }],
     });
 
-    if (!user) return res.status(404).json({ msg: "User not found" });
-
-    return res.json(user.likedSongs || []);
+    return res.json(user?.likedSongs || []);
   } catch (err) {
     console.error("getLikedSongs error:", err);
     return res.status(500).json({ msg: "Failed to fetch liked songs" });
@@ -66,16 +62,26 @@ export const getLikedSongs = async (req, res) => {
 // GET /api/users/me/followed-artists
 export const getFollowedArtists = async (req, res) => {
   try {
-    const user = await User.findOne({ firebaseUid: req.userId }).populate(
-      "followedArtists"
-    );
+    const user = await User.findOne({ firebaseUid: req.userId })
+      .populate("followedArtists");
 
-    if (!user) return res.status(404).json({ msg: "User not found" });
-
-    return res.json(user.followedArtists || []);
+    return res.json(user?.followedArtists || []);
   } catch (err) {
     console.error("getFollowedArtists error:", err);
-    return res.status(500).json({ msg: "Failed to fetch artists" });
+    return res.status(500).json({ msg: "failed to fetch artists" });
+  }
+};
+
+// GET /api/users/me/liked-albums
+export const getLikedAlbums = async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.userId })
+      .populate("likedAlbums");
+
+    return res.json(user?.likedAlbums || []);
+  } catch (err) {
+    console.error("getLikedAlbums error:", err);
+    return res.status(500).json({ msg: "Failed to fetch liked albums" });
   }
 };
 
@@ -84,15 +90,11 @@ export const getListeningHistory = async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.userId }).populate({
       path: "listeningHistory.song",
-      populate: [{ path: "artist" }, { path: "album" }],
+      populate: [{ path: "artists" }, { path: "album" }],
     });
 
-    if (!user) return res.status(404).json({ msg: "User not found" });
-
-    // sort by playedAt desc
-    const history = [...(user.listeningHistory || [])].sort(
-      (a, b) => b.playedAt - a.playedAt
-    );
+    const history =
+      user?.listeningHistory?.sort((a, b) => b.playedAt - a.playedAt) || [];
 
     return res.json(history);
   } catch (err) {

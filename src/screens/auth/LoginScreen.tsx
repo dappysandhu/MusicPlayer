@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Image,
   TextInput,
   Dimensions,
   useColorScheme,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/AuthStackTypes";
@@ -17,6 +17,8 @@ import { Colors } from "../../constants/theme";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { auth } from "../../services/firebase";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
+import api from "../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
@@ -38,33 +40,48 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const LOGO_HEIGHT = LOGO_WIDTH * LOGO_RATIO;
 
 const handleLogin = async () => {
-    if (!email || !password) {
-      alert("Please enter email and password.");
+  if (!email || !password) {
+    alert("Please enter email and password.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // Firebase login
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
+
+    if (!cred.user.emailVerified) {
+      await sendEmailVerification(cred.user);
+      alert("Please verify your email first.");
+      await auth.signOut();
       return;
     }
 
-    try {
-      setLoading(true);
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+    // Get Firebase token
+    const token = await cred.user.getIdToken(true);
+    console.log("TOKEN:", token);
 
-      if (!cred.user.emailVerified) {
-        await sendEmailVerification(cred.user);
-        alert(
-          "Your email is not verified yet. We’ve sent you another verification email. Please verify and then log in again."
-        );
-        await auth.signOut();
-        return;
-      }
+    // Store token (optional but fine)
+    await AsyncStorage.setItem("authToken", token);
 
-      // Email verified → proceed 
-      navigation.navigate("Welcome");
-    } catch (err: any) {
-      console.log("Login error:", err);
-      alert(err.message || "Failed to log in.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // await api.get("/users/me");
+    // Go to app
+    navigation.replace("Welcome");
+  } catch (err: any) {
+    console.log("Login error:", err?.response?.status, err?.response?.config?.url, err);
+    alert(err?.message || "Login failed.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: C.background }]}>

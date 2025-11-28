@@ -28,6 +28,20 @@ export const createPlaylist = async (req, res) => {
   }
 };
 
+// GET /api/playlists
+export const getAllPlaylists = async (req, res) => {
+  try {
+    const playlists = await Playlist.find()
+      .populate("songs", "title artistId coverUrl audioUrl duration")
+      .populate("owner", "name email");
+
+    res.json(playlists);
+  } catch (err) {
+    console.error("Error fetching playlists:", err);
+    res.status(500).json({ message: "Failed to fetch playlists" });
+  }
+};
+
 // GET /api/playlists/:id
 export const getPlaylistById = async (req, res) => {
   try {

@@ -8,9 +8,14 @@ import {
   getMyPlaylists,
   addSongToPlaylist,
   removeSongFromPlaylist,
+  getAllPlaylists,
 } from "../controllers/playlistController.js";
 
 const router = express.Router();
+
+// PUBLIC — GET /api/playlists/all
+router.get("/all", getAllPlaylists);
+
 
 // POST /api/playlists
 router.post("/", firebaseAuth, ensureUser, createPlaylist);

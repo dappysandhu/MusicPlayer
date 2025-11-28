@@ -8,6 +8,7 @@ import {
   getLikedSongs,
   getFollowedArtists,
   getListeningHistory,
+  getLikedAlbums,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -26,5 +27,9 @@ router.get("/me/followed-artists", firebaseAuth, ensureUser, getFollowedArtists)
 
 // GET /api/users/me/history
 router.get("/me/history", firebaseAuth, ensureUser, getListeningHistory);
+
+// GET /api/users/me/liked-albums
+router.get("/me/liked-albums", firebaseAuth, ensureUser, getLikedAlbums);
+
 
 export default router;

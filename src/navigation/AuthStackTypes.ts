@@ -5,4 +5,7 @@ export type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
   ForgotPassword: undefined;
+  Playlist: { playlist: any };
+  Player: undefined;
+  Queue: undefined;
 };

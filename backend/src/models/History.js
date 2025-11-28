@@ -3,7 +3,8 @@ const { Schema, model } = mongoose;
 
 const HistorySchema = new Schema(
   {
-    user: { type: String, ref: "User", required: true }, // Firebase UID
+    // Link to User document (_id), not just raw Firebase UID
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     song: { type: Schema.Types.ObjectId, ref: "Song", required: true },
     playedAt: { type: Date, default: Date.now },
     device: String,

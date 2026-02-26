@@ -28,7 +28,7 @@ const similarity = (a, b) => {
 
 
 export const mergeJamendoIntoSpotify = async () => {
-  console.log("\n🔄 Hybrid Merge Started...");
+  console.log("\n Hybrid Merge Started...");
 
   const jamendoSongs = await Song.find({
     jamendoId: { $exists: true },

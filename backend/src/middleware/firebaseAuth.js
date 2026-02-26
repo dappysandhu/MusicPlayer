@@ -24,7 +24,7 @@ export const firebaseAuth = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.log("🔥 FirebaseAuth Error:", err.message);
+    console.log("FirebaseAuth Error:", err.message);
     return res.status(401).json({ msg: "Invalid Firebase token" });
   }
 };

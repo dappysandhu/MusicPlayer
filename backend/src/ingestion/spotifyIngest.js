@@ -109,7 +109,7 @@ const saveTracks = async (tracks, albumObj, artistObj) => {
 // main ingestion function
 export const ingestSpotifyArtist = async (artistId) => {
   try {
-    console.log(`\n🎧 Fetching artist ${artistId}...`);
+    console.log(`\n Fetching artist ${artistId}...`);
 
     const artistInfo = await fetchArtist(artistId);
     const artistObj = await saveArtist(artistInfo);
